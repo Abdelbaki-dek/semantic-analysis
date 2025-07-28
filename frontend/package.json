@@ -1,24 +1,15 @@
 {
-  "name": "frontend-analyse-semantique",
+  "name": "frontend-static",
   "version": "1.0.0",
-  "private": true,
+  "description": "Frontend statique pour analyse sémantique",
+  "main": "server.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "echo 'Build completed successfully'",
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
-    "next": "^14.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
-    "chart.js": "^4.4.1",
-    "axios": "^1.6.2"
-  },
-  "devDependencies": {
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^14.0.4"
+    "express": "^4.18.2"
   },
   "engines": {
     "node": ">=18.0.0"
