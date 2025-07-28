@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Plateforme d'Analyse Sémantique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 48px 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            margin: 24px 0;
+        }
+
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f8fafc;
+        }
+
+        .upload-zone:hover {
+            border-color: #3b82f6;
+            background-color: #f0f9ff;
+        }
+
+        .upload-zone.drag-over {
+            border-color: #3b82f6;
+            background-color: #dbeafe;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            margin: 24px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-value.positive { color: #10b981; }
+        .metric-value.negative { color: #ef4444; }
+        .metric-value.neutral { color: #f59e0b; }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .download-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            padding: 16px 32px;
+            border-radius: 8px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            background: white;
+            color: #667eaa;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .insight-card {
+            margin-bottom: 16px;
+            padding: 16px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .insight-description {
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .header h1 { font-size: 2rem; }
+            .results-grid { grid-template-columns: 1fr; }
+            .download-buttons { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🚀 Plateforme d'Analyse Sémantique</h1>
+            <p>Analysez vos avis clients avec l'intelligence artificielle</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Progress Bar -->
+        <div id="progress-container" class="progress-container hidden">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Progression</span>
+                <span id="progress-text">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <div id="progress-status" style="text-align: center; margin-top: 8px; color: #64748b;"></div>
+            <div style="text-align: center; margin-top: 16px;">
+                <button onclick="resetAnalysis()" class="btn btn-primary">Nouvelle Analyse</button>
+            </div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div id="upload-section" class="card">
+            <div id="upload-zone" class="upload-zone" onclick="document.getElementById('file-input').click()">
+                <div class="upload-icon">📊</div>
+                <h3 style="margin-bottom: 8px;">Glissez-déposez votre fichier ou cliquez pour sélectionner</h3>
+                <p>Formats supportés : CSV, Excel (.xlsx, .xls) - Taille max : 100MB</p>
+                <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display: none;" onchange="handleFileSelect(event)">
+                <div id="file-info" class="hidden" style="margin-top: 16px; padding: 12px; background-color: #dbeafe; border-radius: 8px; display: inline-block;">
+                    <p id="file-name" style="color: #1d4ed8; font-weight: 600;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column Selection -->
+        <div id="column-section" class="card hidden">
+            <h3 style="margin-bottom: 16px;">Configuration de l'analyse</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                        Sélectionnez la colonne contenant les avis :
+                    </label>
+                    <select id="column-select">
+                        <option value="">Choisir une colonne...</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                        Informations du fichier :
+                    </label>
+                    <div style="background-color: #f8fafc; padding: 12px; border-radius: 8px;">
+                        <p><strong>Lignes :</strong> <span id="row-count">0</span></p>
+                        <p><strong>Colonnes :</strong> <span id="column-count">0</span></p>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 24px;">
+                <button onclick="startAnalysis()" class="btn btn-primary" style="font-size: 1.1rem; padding: 16px 32px;">
+                    🔍 Lancer l'Analyse
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-section" class="alert alert-error hidden">
+            <strong>❌ Erreur :</strong> <span id="error-message"></span>
+        </div>
+
+        <!-- Results -->
+        <div id="results-section" class="hidden">
+            <div class="card">
+                <h2 style="margin-bottom: 24px; font-size: 1.8rem;">📊 Résultats de l'Analyse</h2>
+                <div id="metrics-grid" class="results-grid"></div>
+            </div>
+
+            <div id="insights-section" class="card">
+                <h3 style="margin-bottom: 16px;">💡 Insights Principaux</h3>
+                <div id="insights-container"></div>
+            </div>
+
+            <div id="download-section" class="download-section">
+                <h3 style="margin-bottom: 8px;">📥 Télécharger les Résultats</h3>
+                <p style="opacity: 0.9; margin-bottom: 0;">
+                    Exportez votre analyse complète avec métriques détaillées
+                </p>
+                <div class="download-buttons">
+                    <a id="pdf-download" href="#" class="download-btn" target="_blank">
+                        📄 Rapport PDF
+                    </a>
+                    <a id="excel-download" href="#" class="download-btn" target="_blank">
+                        📊 Données Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'https://semantic-analysis-backend.onrender.com';
+        
+        // État global
+        let fileInfo = null;
+        let sessionId = null;
+
+        // Gestion du drag & drop
+        const uploadZone = document.getElementById('upload-zone');
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // Gestion de la sélection de fichier
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        // Traitement du fichier
+        async function handleFile(file) {
+            document.getElementById('file-name').textContent = `Fichier sélectionné : ${file.name}`;
+            document.getElementById('file-info').classList.remove('hidden');
+            
+            showProgress(10, 'Téléchargement du fichier...');
+            hideError();
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    fileInfo = result;
+                    populateColumns(result.columns);
+                    document.getElementById('row-count').textContent = result.rowCount;
+                    document.getElementById('column-count').textContent = result.columns.length;
+                    
+                    showProgress(30, 'Fichier traité, prêt pour l\'analyse');
+                    document.getElementById('column-section').classList.remove('hidden');
+                } else {
+                    throw new Error(result.error || 'Erreur lors de l\'upload');
+                }
+            } catch (error) {
+                showError(error.message);
+                resetProgress();
+            }
+        }
+
+        // Remplir la liste des colonnes
+        function populateColumns(columns) {
+            const select = document.getElementById('column-select');
+            select.innerHTML = '<option value="">Choisir une colonne...</option>';
+            
+            columns.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                select.appendChild(option);
+            });
+
+            // Auto-sélection de la première colonne
+            if (columns.length > 0) {
+                select.value = columns[0];
+            }
+        }
+
+        // Lancer l'analyse
+        async function startAnalysis() {
+            const selectedColumn = document.getElementById('column-select').value;
+            
+            if (!selectedColumn) {
+                showError('Veuillez sélectionner une colonne à analyser');
+                return;
+            }
+
+            showProgress(50, 'Analyse en cours...');
+            hideError();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: fileInfo.preview,
+                        textColumn: selectedColumn
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    sessionId = result.sessionId;
+                    displayResults(result.results);
+                    showProgress(100, 'Analyse terminée !');
+                } else {
+                    throw new Error(result.error || 'Erreur lors de l\'analyse');
+                }
+            } catch (error) {
+                showError(error.message);
+                resetProgress();
+            }
+        }
+
+        // Afficher les résultats
+        function displayResults(results) {
+            // Métriques
+            const metricsGrid = document.getElementById('metrics-grid');
+            const sentiment = results.metrics.sentiment;
+            
+            if (sentiment) {
+                metricsGrid.innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-value">${results.summary.totalReviews}</div>
+                        <div class="metric-label">Avis analysés</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value positive">${sentiment.percentages.positif.toFixed(0)}%</div>
+                        <div class="metric-label">Positifs</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value negative">${sentiment.percentages.négatif.toFixed(0)}%</div>
+                        <div class="metric-label">Négatifs</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value neutral">${sentiment.globalScore.toFixed(2)}</div>
+                        <div class="metric-label">Score Global</div>
+                    </div>
+                `;
+            }
+
+            // Insights
+            const insightsContainer = document.getElementById('insights-container');
+            if (results.insights && results.insights.length > 0) {
+                insightsContainer.innerHTML = results.insights.slice(0, 3).map(insight => `
+                    <div class="insight-card">
+                        <div class="insight-title">${insight.title}</div>
+                        <div class="insight-description">${insight.description}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Liens de téléchargement
+            document.getElementById('pdf-download').href = `${API_BASE_URL}/export/pdf/${sessionId}`;
+            document.getElementById('excel-download').href = `${API_BASE_URL}/export/excel/${sessionId}`;
+
+            // Afficher la section résultats
+            document.getElementById('results-section').classList.remove('hidden');
+        }
+
+        // Utilitaires UI
+        function showProgress(percent, message) {
+            document.getElementById('progress-container').classList.remove('hidden');
+            document.getElementById('upload-section').classList.add('hidden');
+            document.getElementById('column-section').classList.add('hidden');
+            
+            document.getElementById('progress-fill').style.width = `${percent}%`;
+            document.getElementById('progress-text').textContent = `${percent}%`;
+            document.getElementById('progress-status').textContent = message;
+        }
+
+        function resetProgress() {
+            document.getElementById('progress-container').classList.add('hidden');
+            document.getElementById('upload-section').classList.remove('hidden');
+            document.getElementById('column-section').classList.add('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            document.getElementById('file-info').classList.add('hidden');
+            document.getElementById('progress-fill').style.width = '0%';
+        }
+
+        function resetAnalysis() {
+            fileInfo = null;
+            sessionId = null;
+            document.getElementById('file-input').value = '';
+            resetProgress();
+            hideError();
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-section').classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error-section').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
