@@ -1,6 +1,7 @@
-
 // Calcul des métriques détaillées
 function calculateMetrics(sentimentResults, thematicResults) {
+  console.log('📊 Calcul des métriques...');
+  
   const metrics = {
     sentiment: calculateSentimentMetrics(sentimentResults),
     themes: calculateThemeMetrics(thematicResults),
@@ -9,6 +10,7 @@ function calculateMetrics(sentimentResults, thematicResults) {
     quality: calculateQualityMetrics(sentimentResults)
   };
   
+  console.log('✅ Métriques calculées');
   return metrics;
 }
 
@@ -32,7 +34,7 @@ function calculateSentimentMetrics(results) {
   };
   
   // Scores moyens
-  const positiveScores = results.filter(r => r.sentiment === 'positif').map(r => r.score);
+  const positiveScores = results.filter(r => r.sentiment === 'positif').map(r => Math.abs(r.score));
   const negativeScores = results.filter(r => r.sentiment === 'négatif').map(r => Math.abs(r.score));
   const neutralScores = results.filter(r => r.sentiment === 'neutre').map(r => r.confidence);
   
@@ -81,14 +83,14 @@ function calculateThemeMetrics(thematicResults) {
     themeDistribution: themes.map(theme => ({
       name: theme.name,
       size: theme.size,
-      percentage: Math.round((theme.size / totalTexts) * 10000) / 100,
+      percentage: totalTexts > 0 ? Math.round((theme.size / totalTexts) * 10000) / 100 : 0,
       keywords: theme.keywords?.slice(0, 5) || [],
       examples: theme.examples?.slice(0, 2) || []
     })),
     dominantTheme: themes.length > 0 ? {
       name: themes[0].name,
       size: themes[0].size,
-      percentage: Math.round((themes[0].size / totalTexts) * 10000) / 100
+      percentage: totalTexts > 0 ? Math.round((themes[0].size / totalTexts) * 10000) / 100 : 0
     } : null
   };
   
@@ -210,6 +212,7 @@ function calculateQualityMetrics(results) {
 
 // Génération des insights
 function generateInsights(sentimentResults, thematicResults, metrics) {
+  console.log('💡 Génération des insights...');
   const insights = [];
   
   // Insights sur les sentiments
