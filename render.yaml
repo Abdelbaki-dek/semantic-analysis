@@ -1,0 +1,50 @@
+services:
+  # Backend API Service
+  - type: web
+    name: analyse-semantique-backend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install --production
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: MAX_FILE_SIZE
+        value: 100MB
+      - key: ANALYSIS_TIMEOUT
+        value: 300000
+    autoDeploy: true
+    
+  # Frontend Next.js Service  
+  - type: web
+    name: analyse-semantique-frontend
+    env: node
+    plan: free
+    region: oregon
+    rootDir: ./frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://analyse-semantique-backend.onrender.com
+      - key: PORT
+        value: 3000
+    autoDeploy: true
+
+# Configuration globale
+databases: []
+
+# Variables d'environnement partagées
+envVarGroups:
+  - name: shared-config
+    envVars:
+      - key: TZ
+        value: Europe/Paris
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=512
