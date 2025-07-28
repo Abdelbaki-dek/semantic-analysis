@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Papa = require('papaparse');
 const XLSX = require('xlsx');
-const { pipeline } = require('@huggingface/transformers');
+const { pipeline } = require('@xenova/transformers');
 
 // Cache des modèles
 let sentimentModel = null;
