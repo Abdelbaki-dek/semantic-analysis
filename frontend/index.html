@@ -637,5 +637,113 @@
             document.getElementById('error-section').classList.add('hidden');
         }
     </script>
+     <script>
+        // Fonction pour gérer la sélection de fichier
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const fileInfo = document.getElementById('fileInfo');
+            const errorInfo = document.getElementById('errorInfo');
+            
+            // Cacher les messages précédents
+            fileInfo.style.display = 'none';
+            errorInfo.style.display = 'none';
+            
+            if (file) {
+                // Vérifier le type de fichier
+                const allowedTypes = ['.csv', '.xlsx', '.xls'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedTypes.includes(fileExtension)) {
+                    showError('Type de fichier non supporté. Veuillez sélectionner un fichier CSV ou Excel.');
+                    return;
+                }
+                
+                // Vérifier la taille (100MB = 100 * 1024 * 1024 bytes)
+                const maxSize = 100 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    showError('Le fichier est trop volumineux. Taille maximum : 100MB');
+                    return;
+                }
+                
+                // Afficher les informations du fichier
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                document.getElementById('fileType').textContent = file.type || 'Non défini';
+                fileInfo.style.display = 'block';
+                
+                // Ici vous pouvez ajouter le code pour traiter le fichier
+                console.log('Fichier sélectionné:', file);
+                processFile(file);
+            }
+        }
+        
+        // Fonction pour afficher les erreurs
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorInfo').style.display = 'block';
+        }
+        
+        // Fonction pour formater la taille du fichier
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Fonction pour traiter le fichier (à personnaliser selon vos besoins)
+        function processFile(file) {
+            // Exemple de traitement
+            console.log('Traitement du fichier:', file.name);
+            
+            // Vous pouvez ajouter ici votre logique de traitement :
+            // - Lecture du fichier avec FileReader
+            // - Envoi vers un serveur
+            // - Analyse des données
+            // etc.
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                console.log('Contenu du fichier lu');
+                // Traiter le contenu ici
+            };
+            
+            // Lire le fichier selon son type
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file); // Pour les fichiers Excel
+            }
+        }
+        
+        // Gestion du drag & drop
+        const uploadZone = document.querySelector('.upload-zone');
+        
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        });
+        
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const fileInput = document.getElementById('fileInput');
+                fileInput.files = files;
+                
+                // Créer un événement de changement pour déclencher handleFileSelect
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        });
+    </script>
 </body>
 </html>
