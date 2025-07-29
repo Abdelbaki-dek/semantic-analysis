@@ -1583,3 +1583,4 @@ function calculateAdvancedThematicMetrics(thematicResults) {
             
             // Sous-thèmes
             subThemes: theme.subThemes || [],
+        }
