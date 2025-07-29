@@ -361,11 +361,41 @@
 
     <script>
         // Configuration
-        const API_BASE_URL = 'https://semantic-analysis-backend.onrender.com';';
+        const API_BASE_URL = 'https://semantic-analysis-backend.onrender.com';
         
         // État global
         let fileInfo = null;
         let sessionId = null;
+
+        // Debug: Logger les erreurs
+        function logError(message, error) {
+            console.error('🚨 ERREUR:', message, error);
+            showError(`${message}: ${error.message || error}`);
+        }
+
+        // Debug: Logger les succès
+        function logSuccess(message, data) {
+            console.log('✅ SUCCÈS:', message, data);
+        }
+
+        // Test de connexion API
+        async function testBackendConnection() {
+            try {
+                console.log('🔄 Test connexion backend:', API_BASE_URL);
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                logSuccess('Backend connecté', data);
+                return true;
+            } catch (error) {
+                logError('Backend non accessible', error);
+                return false;
+            }
+        }
+
+        // Tester la connexion au chargement
+        window.addEventListener('load', () => {
+            testBackendConnection();
+        });
 
         // Gestion du drag & drop
         const uploadZone = document.getElementById('upload-zone');
@@ -398,6 +428,19 @@
 
         // Traitement du fichier
         async function handleFile(file) {
+            console.log('📁 Fichier sélectionné:', file.name, file.size, 'bytes');
+            
+            // Vérifications de base
+            if (file.size > 100 * 1024 * 1024) {
+                showError('Fichier trop volumineux (max 100MB)');
+                return;
+            }
+
+            if (!file.name.match(/\.(csv|xlsx|xls)$/i)) {
+                showError('Format non supporté. Utilisez CSV ou Excel.');
+                return;
+            }
+
             document.getElementById('file-name').textContent = `Fichier sélectionné : ${file.name}`;
             document.getElementById('file-info').classList.remove('hidden');
             
@@ -408,14 +451,24 @@
             formData.append('file', file);
 
             try {
+                console.log('🚀 Envoi vers:', `${API_BASE_URL}/upload`);
+                
                 const response = await fetch(`${API_BASE_URL}/upload`, {
                     method: 'POST',
                     body: formData,
+                    mode: 'cors'
                 });
 
-                const result = await response.json();
+                console.log('📡 Réponse reçue:', response.status, response.statusText);
 
-                if (response.ok) {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                logSuccess('Upload réussi', result);
+
+                if (result.success) {
                     fileInfo = result;
                     populateColumns(result.columns);
                     document.getElementById('row-count').textContent = result.rowCount;
@@ -424,10 +477,10 @@
                     showProgress(30, 'Fichier traité, prêt pour l\'analyse');
                     document.getElementById('column-section').classList.remove('hidden');
                 } else {
-                    throw new Error(result.error || 'Erreur lors de l\'upload');
+                    throw new Error(result.error || 'Erreur upload inconnue');
                 }
             } catch (error) {
-                showError(error.message);
+                logError('Erreur upload', error);
                 resetProgress();
             }
         }
@@ -463,6 +516,8 @@
             hideError();
 
             try {
+                console.log('🧠 Lancement analyse...');
+                
                 const response = await fetch(`${API_BASE_URL}/analyze`, {
                     method: 'POST',
                     headers: {
@@ -472,25 +527,35 @@
                         data: fileInfo.preview,
                         textColumn: selectedColumn
                     }),
+                    mode: 'cors'
                 });
 
-                const result = await response.json();
+                console.log('📊 Réponse analyse:', response.status);
 
-                if (response.ok) {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                logSuccess('Analyse réussie', result);
+
+                if (result.success) {
                     sessionId = result.sessionId;
                     displayResults(result.results);
                     showProgress(100, 'Analyse terminée !');
                 } else {
-                    throw new Error(result.error || 'Erreur lors de l\'analyse');
+                    throw new Error(result.error || 'Erreur analyse inconnue');
                 }
             } catch (error) {
-                showError(error.message);
+                logError('Erreur analyse', error);
                 resetProgress();
             }
         }
 
         // Afficher les résultats
         function displayResults(results) {
+            console.log('📈 Affichage des résultats:', results);
+            
             // Métriques
             const metricsGrid = document.getElementById('metrics-grid');
             const sentiment = results.metrics.sentiment;
